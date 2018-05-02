@@ -1,0 +1,13 @@
+{
+    "name": "xiebao",
+    "version": "0.1.0",
+    "scripts": {
+        "dev": "electron .",
+        "build": "electron-packager . xiebao --platform=win32 --out ../app --arch=x64 --version=0.0.1 --electron-version=1.8.2 --overwrite"
+    },
+    "main": "main.js",
+    "dependencies": {
+        "excel-export": "^0.5.1",
+        "systeminformation": "^3.37.4"
+    }
+}
