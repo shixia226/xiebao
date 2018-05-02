@@ -17,6 +17,9 @@ if (logout) {
 var exportBtn = document.getElementById('export');
 if (exportBtn) {
     exportBtn.onclick = () => {
+        ipcRenderer.once('export-done', () => {
+            alert('导出成功！');
+        });
         ipcRenderer.send('export');
     }
     var recoverfile = document.getElementById('recoverfile');
@@ -29,11 +32,11 @@ if (exportBtn) {
         var reader = new FileReader();
         reader.readAsText(file);
         reader.onload = function() {
-            ipcRenderer.send('import', this.result);
             ipcRenderer.once('import-resolve', (evt, data) => {
                 alert('修复成功！');
                 recoverfile.value = '';
             });
+            ipcRenderer.send('import', this.result);
         };
     }
 }
@@ -107,9 +110,8 @@ if (window.EUI) {
                     if (isDefaultKeyEvent(editor, false)) return;
                     nameNext = 'previousSibling';
                     nameChild = 'lastChild';
-                } else {
-                    evt.preventDefault();
                 }
+                evt.preventDefault();
                 while (true) {
                     var ncell = cell[nameNext];
                     if (!ncell) {

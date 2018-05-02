@@ -13,6 +13,11 @@ module.exports = (app) => {
             xh: readDirContent(Config.DIR_XH),
         };
         fs.writeFileSync(PATH, JSON.stringify(content));
+        evt.sender.webContents.session.on('will-download', (event, item, webContents) => {
+            item.once('done', (event, state) => {
+                evt.sender.send('export-done', 'OK');
+            })
+        });
         evt.sender.webContents.downloadURL(url.format({
             pathname: path.resolve(PATH),
             protocol: 'file:',
