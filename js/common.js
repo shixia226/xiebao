@@ -14,13 +14,28 @@ if (logout) {
     }
 }
 
+function formatDate(date) {
+    var month = date.getMonth() + 1;
+    return date.getFullYear() + (month < 10 ? '0' : '') + month;
+}
+
 var exportBtn = document.getElementById('export');
 if (exportBtn) {
-    exportBtn.onclick = () => {
+    exportBtn.onclick = (evt) => {
         ipcRenderer.once('export-done', () => {
             alert('导出成功！');
         });
-        ipcRenderer.send('export');
+        var date = '';
+        if (!evt.shiftKey) {
+            date = [];
+            var dt = new Date();
+            for (var i = 0; i < 3; i++) {
+                date.push(formatDate(dt));
+                dt.setMonth(dt.getMonth() - 1);
+            }
+            date = date.join(',');
+        }
+        ipcRenderer.send('export', date);
     }
     var recoverfile = document.getElementById('recoverfile');
     document.getElementById('import').onclick = function() {

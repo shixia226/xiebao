@@ -6,11 +6,12 @@ const PATH = Config.PATH + 'export';
 
 module.exports = (app) => {
     app.on('export', (evt, param) => {
+        param = param ? param.split(',') : false;
         let content = {
             staff: readFileContent(Config.FILE_STAFF),
-            rwxq: readDirContent(Config.DIR_RWXQ),
-            rwzl: readDirContent(Config.DIR_RWZL),
-            xh: readDirContent(Config.DIR_XH),
+            rwxq: readDirContent(Config.DIR_RWXQ, param),
+            rwzl: readDirContent(Config.DIR_RWZL, param),
+            xh: readDirContent(Config.DIR_XH, false),
         };
         fs.writeFileSync(PATH, JSON.stringify(content));
         evt.sender.webContents.session.on('will-download', (event, item, webContents) => {
@@ -61,16 +62,18 @@ function writeFileContent(file, datas) {
     out.end();
 }
 
-function readDirContent(dir) {
+function readDirContent(dir, date) {
     if (fs.existsSync(dir, fs.F_OK)) {
         let files = fs.readdirSync(dir),
             content = {};
         for (let i = 0, len = files.length; i < len; i++) {
             let file = files[i];
-            if (fs.statSync(dir + file).isFile()) {
-                content[file] = JSON.parse(fs.readFileSync(dir + file).toString());
-            } else {
-                content[file] = readDirContent(dir + file + '/');
+            if (!date || date.indexOf(file) !== -1) {
+                if (fs.statSync(dir + file).isFile()) {
+                    content[file] = JSON.parse(fs.readFileSync(dir + file).toString());
+                } else {
+                    content[file] = readDirContent(dir + file + '/');
+                }
             }
         }
         return content;

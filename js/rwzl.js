@@ -33,10 +33,34 @@ if (historyBtn) {
                         headervisible: false,
                         headers: [{
                             name: 'text'
+                        }, {
+                            width: 30,
+                            render: function(cell, value, name, i, ridx, list) {
+                                if (ridx >= 3) {
+                                    var span = cell.appendChild(list.doc.createElement("span"));
+                                    span.className = "ui-icon font-icon-minus ui-icon-btn";
+                                    span.title = "删除该月记录";
+                                }
+                            }
                         }],
                         events: {
                             clickcell: function(evt, cidx, ridx) {
-                                window.location.href = window.location.pathname + '?date=' + this.getData(ridx, 'date');
+                                var target = evt.target;
+                                if (target.nodeName.toUpperCase() === "SPAN") {
+                                    var ridx = target.parentNode.parentNode.rowIndex;
+                                    if (confirm("确认删除【" + this.getData(ridx, 'text') + "】的数据？")) {
+                                        EUI.ajax({
+                                            url: "/rw?cmd=remove-rw&date=" + this.getData(ridx, 'date'),
+                                            context: this,
+                                            onfinish: function() {
+                                                alert('删除成功！');
+                                                this.remove(ridx);
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    window.location.href = window.location.pathname + '?date=' + this.getData(ridx, 'date');
+                                }
                             }
                         }
                     }

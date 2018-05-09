@@ -69,7 +69,7 @@ module.exports = function(app) {
                     });
                 })
                 break;
-            case 'list-rw': //罗列任务详情
+            case 'list-rw': //罗列指定月份、型号、工序的详情
                 var dir = Config.DIR_RWXQ + param.match(regDate)[1] + '/';
                 fs.readdir(dir, function(err, files) {
                     var arr = [];
@@ -124,6 +124,15 @@ module.exports = function(app) {
                         }
                     });
                 });
+                break;
+            case 'remove-rw':
+                var date = param.match(regDate)[1],
+                    rwzl = Config.DIR_RWZL + date;
+                if (fs.existsSync(rwzl)) {
+                    fs.unlinkSync(rwzl);
+                }
+                deleteFolder(Config.DIR_RWXQ + date);
+                Msg(evt, 'OK', param);
                 break;
         }
     })
@@ -265,3 +274,18 @@ function export2excel(date, staffs) {
     }
     return excel.execute(datas);
 }
+
+var deleteFolder = function(path) {
+    if (fs.existsSync(path)) {
+        var files = fs.readdirSync(path);
+        for (var i = 0, len = files.length; i < len; i++) {
+            var cpath = path + '/' + files[i];
+            if (fs.statSync(cpath).isFile()) {
+                fs.unlinkSync(cpath);
+            } else {
+                deleteFolder(cpath);
+            }
+        }
+        fs.rmdirSync(path);
+    }
+};

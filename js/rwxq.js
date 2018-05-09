@@ -118,6 +118,13 @@ EUI.ajax({
                         count = null;
                     if (name === "xh") {
                         if (!(gx = this.getData(ridx, "gx"))) return;
+                        if (!gxs[value][gx]) {
+                            EUI.query("salary").innerHTML = (parseFloat(EUI.query("salary").innerHTML, 10) || 0) - (this.getData(ridx, 'profit') || 0) + ' 元';
+                            this.setData('', ridx, 'gx');
+                            this.setData('', ridx, "price");
+                            this.setData('', ridx, "profit");
+                            return;
+                        }
                         xh = value;
                         count = this.getData(ridx, "count");
                     } else if (name === "gx") {
