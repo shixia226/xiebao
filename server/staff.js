@@ -24,7 +24,7 @@ module.exports = function(app) {
             case 'remove-staff': //删除
                 fs.readFile(Config.FILE_STAFF, function(err, data) {
                     var datas = JSON.parse(data);
-                    var idx = indexOf(datas, param.match(/id=([^&]+)/)[1]);
+                    var idx = indexOf(datas, param.match(/(?:^|&)id=([^&]+)/)[1]);
                     if (idx !== -1) {
                         datas.splice(idx, 1);
                         saveStaff(datas);

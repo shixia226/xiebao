@@ -52,7 +52,6 @@ EUI.getCmp("list", {
             span.title = "添加员工";
         },
         render: function(cell, value, name, i, ridx, list) {
-            if (list.getData(ridx, "id")) return;
             var span = cell.appendChild(list.doc.createElement("span"));
             span.className = "ui-icon font-icon-minus ui-icon-btn";
             span.title = "删除";
