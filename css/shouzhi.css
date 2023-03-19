@@ -4,18 +4,19 @@
 }
 
 .content {
-  padding-top: 30px;
+  padding-top: 36px;
   padding-bottom: 30px;
 }
 
 .list-info {
-  height: 30px;
+  height: 36px;
   padding: 5px;
   margin: 0 auto;
   text-align: left;
   font-weight: bold;
-  margin-top: -28px;
+  margin-top: -34px;
   display: flex;
+  align-items: center;
 }
 
 .list-info .flex-item {

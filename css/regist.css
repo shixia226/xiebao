@@ -1,53 +1,53 @@
 .content {
-    padding: 60px 120px;
+  padding: 60px 120px;
 }
 
 .content .item {
-    padding: 10px 10px 10px 120px;
+  padding: 10px 10px 10px 120px;
 }
 
 .content .item .title {
-    width: 110px;
-    margin-left: -120px;
-    display: inline-block;
-    text-align: right;
-    vertical-align: top;
-    padding: 2px;
+  width: 110px;
+  margin-left: -120px;
+  display: inline-block;
+  text-align: right;
+  vertical-align: top;
+  padding: 2px;
 }
 
 .content .item input {
-    width: 100%;
-    border: 1px solid #CCC;
-    padding: 2px 5px;
+  width: 100%;
+  border: 1px solid #ccc;
+  padding: 2px 5px;
 }
 
 .content .item .serial {
-    background: #F6F6F6;
+  background: #f6f6f6;
 }
 
 .content .item .identity {
-    width: 100%;
-    border: 1px solid #CCC;
-    resize: none;
-    padding: 2px 5px;
-    height: 80px;
+  width: 100%;
+  border: 1px solid #ccc;
+  resize: none;
+  padding: 2px 5px;
+  height: 80px;
 }
 
 .btn {
-    color: #FFF;
-    background: #5c5cdf;
-    padding: 5px 20px;
-    cursor: pointer;
-    border-radius: 3px;
-    text-align: center;
-    float: right;
-    margin-right: 20px;
+  color: #fff;
+  background: #5c5cdf;
+  padding: 5px 20px;
+  cursor: pointer;
+  border-radius: 3px;
+  text-align: center;
+  float: right;
+  margin-right: 20px;
 }
 
 .btn:hover {
-    background: #4b4bf5;
+  background: #4b4bf5;
 }
 
 .trial {
-    display: none;
+  display: none;
 }

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>鞋包管理</title>
+    <link rel="stylesheet" href="../eui/cmps/themes/default/ui.css" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/shouzhi.css" />
+</head>
+
+<body class="ui-select-none">
+    <div class="header">
+        <p><span id="date-ym"></span>收支总览</p>
+        <div class="nav">
+            <a style="margin-right: 8px" href="./index.html">首页</a><span>欢迎您<span id="user" class="user"></span>!</span><span id="history" class="btn">切换</span><span id="logout" class="btn">退出</span>
+        </div>
+    </div>
+    <div class="content" id="con-list">
+      <div class="list-info">
+          <div>货物总价：<span id="income" class="info-span"></span></div>
+          <div class="flex-item">工资支出：<span id="salary" class="info-span"></span></div>
+          <div class="flex-item">运费支出：<span id="yf" class="info-span"></span></div>
+          <div class="flex-item">其他支出：<input id="other" style="width: 120px; height: 26px; padding: 0 5px; color: #666; border: 1px solid #cccccc;"></div>
+          <div>总利润：<span id="total" class="info-span"></span></div>
+      </div>
+    </div>
+</body>
+<script src="../eui/core/ui.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/shouzhi.js"></script>
+
+</html>

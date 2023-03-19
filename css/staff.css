@@ -1,14 +1,14 @@
 body {
-    padding-bottom: 50px;
+  padding-bottom: 50px;
 }
 .status-normal {
-    border-color: transparent;
-    background: none;
-    color: #888888;
+  border-color: transparent;
+  background: none;
+  color: #888888;
 }
 
 .status-quit {
-    border-color: transparent;
-    background: none;
-    color: #E84A62;
+  border-color: transparent;
+  background: none;
+  color: #e84a62;
 }
