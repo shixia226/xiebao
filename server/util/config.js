@@ -1,6 +1,4 @@
-const fs = require('fs');
 let path = './config/';
-// let path = '/usr/renren/workspace/app/';
 
 module.exports = {
   FILE_CONFIG: path + 'setting',

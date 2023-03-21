@@ -16,9 +16,5 @@
   font-weight: bold;
   margin-top: -28px;
   display: flex;
-}
-
-.list-info .flex-item {
-  flex-grow: 1;
-  text-align: center;
+  justify-content: space-between;
 }

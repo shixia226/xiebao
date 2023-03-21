@@ -1,17 +1,11 @@
-var logout = document.getElementById('logout');
-if (logout) {
-  //获取用户信息
-  var ipcRenderer = require('electron').ipcRenderer;
+//获取用户信息
+var ipcRenderer = require('electron').ipcRenderer;
 
+if (document.getElementById('user')) {
   ipcRenderer.once('get-user', (evt, data) => {
     document.getElementById('user').innerHTML = data ? '（' + data + '）' : '';
   });
   ipcRenderer.send('get-user');
-
-  //退出系统
-  logout.onclick = () => {
-    ipcRenderer.send('logout');
-  }
 }
 
 function formatDate (date) {
@@ -178,4 +172,8 @@ if (window.EUI) {
   EUI.registKeyEvent = function (list) {
     EUI.bind(document.body, 'keydown', list, keydown4list);
   };
+
+  EUI.toNumber = function (num) {
+    return Math.round(num * 1000) / 1000
+  }
 }

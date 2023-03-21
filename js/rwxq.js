@@ -19,8 +19,9 @@ EUI.ajax({
   url: "/salary?cmd=query-salary&staff=" + staff + "&date=" + currentDate,
   json: true,
   onfinish: function (data) {
+    EUI.query("factory").innerHTML = EUI.parseUrl('factory') || '-';
     EUI.query("name-staff").innerHTML = staff.split('-')[1];
-    EUI.query("salary").innerHTML = EUI.round(data["salary"], 2) + " 元";
+    EUI.query("salary").innerHTML = EUI.toNumber(data["salary"]) + " 元";
     xhgxs = data["xhgxs"];
     var xhs = {},
       gxs = {},

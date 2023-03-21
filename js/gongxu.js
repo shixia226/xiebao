@@ -25,13 +25,6 @@ EUI.getCmp("list", {
       return /^\d+(\.\d+)?$/.test(value);
     }
   }, {
-    caption: "货价",
-    name: "income",
-    editable: true,
-    validator: function (value) {
-      return /^\d+(\.\d+)?$/.test(value);
-    }
-  }, {
     width: 30,
     renderheader: function (headerCell, caption, header, i, doc) {
       var span = headerCell.appendChild(doc.createElement("span"));
@@ -55,6 +48,11 @@ EUI.getCmp("list", {
           evt.data.remove(target.parentNode.parentNode.rowIndex);
           return false
         }
+      }
+    },
+    ondatachange: function (value, ovalue, name) {
+      if (name === 'price') {
+        EUI.query("price").innerText = EUI.toNumber(parseFloat(EUI.query('price').innerText) + (+value) - (+ovalue || 0)) + ' 元'
       }
     }
   }
@@ -112,11 +110,19 @@ EUI.getCmp("list", {
           context: gongxuList,
           onfinish: function (xh) {
             if (xh.gxs) {
-              EUI.query('yf').value = xh.yf
+              EUI.query('yf').value = xh.yf || ''
+              EUI.query('income').value = xh.income || ''
               this.add(xh.gxs)
+              EUI.query("price").innerText = EUI.toNumber(xh.gxs.reduce(function (sum, gx) {
+                return sum + (+gx.price || 0)
+              }, 0)) + ' 元'
             } else {
-              EUI.query('yf').value = 0
+              EUI.query('yf').value = ''
+              EUI.query('income').value = ''
               this.add(xh)
+              EUI.query("price").innerText = EUI.toNumber(xh.reduce(function (sum, gx) {
+                return sum + (+gx.price || 0)
+              }, 0)) + ' 元'
             }
           }
         });
@@ -149,8 +155,9 @@ EUI.getCmp("list", {
           EUI.alert("型号不能为空.");
           return;
         }
-        var yunfei = +EUI.query('yf').value || 0
-        var datas = gongxuList.getData(["gx", "price", "income"], true),
+        var income = EUI.toNumber(+EUI.query('income').value || 0)
+        var yunfei = EUI.toNumber(+EUI.query('yf').value || 0)
+        var datas = gongxuList.getData(["gx", "price"], true),
           len = datas.length;
         if (len) {
           for (var i = 0; i < len; i++) {
@@ -164,7 +171,7 @@ EUI.getCmp("list", {
             }
           }
           EUI.ajax({
-            url: "/xinghao?cmd=update-xh&xh=" + xinghao + '&yf=' + yunfei + "&gxs=" + encodeURIComponent(JSON.stringify(datas)),
+            url: "/xinghao?cmd=update-xh&xh=" + xinghao + '&income=' + income + '&yf=' + yunfei + "&gxs=" + encodeURIComponent(JSON.stringify(datas)),
             context: xinghaoList,
             onfinish: function () {
               if (this.getIndex(xinghao, "xh") === -1) {

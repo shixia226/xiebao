@@ -2,10 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const excel = require('excel-export');
-const Count = require('./util/count');
 const Msg = require('./util/msg');
 const Config = require('./util/config');
 const Salary = require('./util/salary');
+const Staff = require('./util/staff')
+const ready = require('./util/ready');
 
 module.exports = function (app) {
   app.on('/rw', function (evt, param) {
@@ -56,6 +57,7 @@ module.exports = function (app) {
                 continue
               }
               var gxs = JSON.parse(fs.readFileSync(Config.DIR_XH + xh));
+              gxs = gxs.gxs || gxs
               for (var k = 0, klen = gxs.length; k < klen; k++) {
                 var gx = gxs[k].gx,
                   count = rwxh[gx] || 0;
@@ -168,27 +170,48 @@ module.exports = function (app) {
             var dir = Config.DIR_RWXQ + param.match(regDate)[1] + '/';
             datas = JSON.parse(datas);
             for (var i = 0, len = datas.length; i < len; i++) {
-              var data = datas[i],
-                staff = data.id + '-' + data.name;
+              var data = datas[i]
+              if (data.status === '0') {
+                continue
+              }
+              var staff = data.id + '-' + data.name;
               salary.push({
                 name: data.name,
-                staff: staff,
+                staff,
+                factory: data.factory,
                 salary: getSalary(dir + staff)
               })
             }
-            salary.sort(function (sa, sb) { return sb.salary - sa.salary; });
+            salary.sort(function (sa, sb) {
+              var fa = sa.factory
+              var fb = sb.factory
+              if (fa) {
+                if (!fb || fa < fb) {
+                  return -1
+                }
+                if (fa > fb) {
+                  return 1
+                }
+              } else if (fb) {
+                return 1
+              }
+              var ssa = sa.salary
+              var ssb = sb.salary
+              return ssa < ssb ? 1 : ssa > ssb ? -1 : 0;
+            });
           }
           Msg(evt, JSON.stringify(salary), param);
         })
         break;
       case 'list-salaries':
+        var company = ready.getCompany()
         var dir = Config.DIR_RWXQ + param.match(regDate)[1] + '/';
         var staff = param.match(regStaff)[1].split(',')
         var data = []
         for (let i = 0, len = staff.length; i < len; i++) {
           var name = staff[i]
           if (!fs.existsSync(dir + name)) {
-            data.push({ name: name.split('-')[1], salary: 0, details: [] })
+            data.push({ company, name: name.split('-')[1], factory: Staff.getFactory(name), salary: 0, details: [] })
             continue
           }
           var rwxq = JSON.parse(fs.readFileSync(dir + name))
@@ -200,7 +223,7 @@ module.exports = function (app) {
             salary += profit
             return { xh, gx, count, price, profit }
           })
-          data.push({ name: name.split('-')[1], salary: toNumber(salary), details })
+          data.push({ company, name: name.split('-')[1], factory: Staff.getFactory(name), salary: toNumber(salary), details })
         }
         Msg(evt, JSON.stringify(data), param);
         break
@@ -280,13 +303,13 @@ function export2excel (date, staffs) {
           price = Salary.getGxPrice(rw.xh, rw.gx),
           salary = price * rw.count;
         sum += salary;
-        (rows[ridx] = rows[ridx] || []).push(k + 1 + '', rw.xh, rw.gx, rw.count, price, '￥' + salary.toFixed(2), '');
+        (rows[ridx] = rows[ridx] || []).push(k + 1 + '', rw.xh, rw.gx, rw.count, price, salary.toFixed(2), '');
       }
       if (klen % 2 === 1) {
         rows[parseInt(klen / 2)].push(...(new Array(7)).join(',').split(','));
       }
       rows.push((new Array(14)).join(',').split(','));
-      rows.push((new Array(5)).join(',').split(',').concat(["日期：", date, '', "员工：", idnames[1], '', '总收益：', '￥' + sum.toFixed(2), '']));
+      rows.push((new Array(5)).join(',').split(',').concat(["日期：", date, '', "员工：", idnames[1], '', '总收益：', sum.toFixed(2), '']));
       datas.push({
         name: idnames[0] + '(' + sum.toFixed(2) + ')',
         cols: [

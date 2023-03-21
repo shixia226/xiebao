@@ -10,10 +10,16 @@ EUI.getCmp("list", {
     name: "index",
     caption: "序号"
   }, {
-    width: 200,
+    width: 160,
+    name: "factory",
+    caption: "车间",
+    editable: true
+  }, {
+    width: 160,
     name: "name",
     caption: "姓名",
-    editable: true
+    editable: true,
+    validator: /[^&?=]/
   }, {
     width: 160,
     name: "tel",
@@ -64,16 +70,17 @@ EUI.getCmp("list", {
         var title = target.title;
         if (title === "添加员工") {
           evt.data.add({
-            status: 1
+            status: '1'
           });
         } else if (title === "删除") {
           var ridx = target.parentNode.parentNode.rowIndex,
             list = evt.data,
-            id = list.getData(ridx, "id");
+            id = list.getData(ridx, "id"),
+            name = list.getData(ridx, "name");
           if (id) {
-            EUI.confirm("确定删除员工【" + list.getData(ridx, "name") + "】？", function () {
+            EUI.confirm("确定删除员工【" + name + "】？", function () {
               EUI.ajax({
-                url: "/staff?cmd=remove-staff&id=" + id,
+                url: "/staff?cmd=remove-staff&staff=" + id + '-' + name,
                 context: list,
                 onfinish: function (result) {
                   if (result === "OK") this.remove(ridx);
@@ -104,7 +111,7 @@ EUI.getCmp("list", {
     caption: "保存",
     args: list,
     onclick: function (btn, list) {
-      var datas = list.getData(["id", "name", "tel", "msg", "status"], true),
+      var datas = list.getData(["id", "factory", "name", "tel", "msg", "status"], true),
         len = datas.length;
       if (len) {
         for (var i = 0; i < len; i++) {

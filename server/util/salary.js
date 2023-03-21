@@ -22,15 +22,14 @@ module.exports = {
     let result = {}
     for (var xh in salary) {
       var xhgx = salary[xh]
-      var yf = +xhgx.yf
+      var yf = toNumber(+xhgx.yf)
+      var income = toNumber(+xhgx.income)
       var gxs = xhgx.gxs
       let price = 0
-      let income = 0
       for (var i = 0, len = gxs.length; i < len; i++) {
         price += +gxs[i].price || 0;
-        income += +gxs[i].income || 0;
       }
-      result[xh] = { yf: yf * 1000 / 1000, price: price * 1000 / 1000, income: income * 1000 / 1000 };
+      result[xh] = { yf, price: toNumber(price), income };
     }
     return result;
   },
@@ -64,4 +63,8 @@ function initSalary () {
       salary[files[i]] = xh.gxs ? xh : { yf: 0, gxs: xh }
     }
   }
+}
+
+function toNumber (num) {
+  return Math.round(num * 1000) / 1000
 }

@@ -26,8 +26,10 @@ module.exports = {
           if (code) {
             this.getDiskSerial((serial) => {
               if (code.serial === serial) {
+                const name = decodeURI(match[1]).split('-')
                 settings = {
-                  user: decodeURI(match[1]),
+                  user: name[0],
+                  company: name[1],
                   serial,
                   identity,
                   date: code.date
@@ -47,17 +49,19 @@ module.exports = {
     }
     callback(false, permission);
   },
-  regist (user, identity, callback) {
+  regist (company, user, identity, callback) {
     var code = decode(identity);
     if (code) {
       this.getDiskSerial((serial) => {
         if (code.serial === serial) {
           settings = {
             user,
+            company,
             serial,
+            identity,
             date: code.date
           };
-          fs.writeFileSync(Config.FILE_CONFIG, encodeURI(user) + ':' + identity);
+          fs.writeFileSync(Config.FILE_CONFIG, encodeURI(user + '-' + company) + ':' + identity);
           callback(settings.date > (new Date()).getTime());
         } else {
           callback(false);
@@ -78,8 +82,16 @@ module.exports = {
   getUser () {
     return settings && settings.user;
   },
+  getCompany () {
+    return settings && settings.company;
+  },
   getIdentity () {
     return settings && settings.identity;
+  },
+  update (user, company) {
+    settings.user = user
+    settings.company = company
+    fs.writeFileSync(Config.FILE_CONFIG, encodeURI(user + '-' + company) + ':' + settings.identity);
   }
 }
 

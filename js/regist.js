@@ -20,13 +20,18 @@ ipcRenderer.once('information', function (event, data) {
       }
     });
     trial.onclick = function () {
-      var user = document.querySelector('.user').value;
+      var user = document.querySelector('.user').value.replace(/[:, ]/g, '').trim(),
+        compnay = document.querySelector('.company').value.replace(/[:, ]/g, '').trim();
+      if (!compnay) {
+        alert('公司名不能为空.');
+        return;
+      }
       if (!user) {
         alert('用户名不能为空.');
         return;
       }
       trial.style.display = 'none';
-      ipcRenderer.send('trial', 'user=' + user.replace(/[:, ]/g, '') + '&serial=' + data[0]);
+      ipcRenderer.send('trial', 'user=' + user + '&company=' + compnay + '&serial=' + data[0]);
     }
   } else {
     EUI.alert('注册码已过期，请重新申请.');
@@ -35,8 +40,13 @@ ipcRenderer.once('information', function (event, data) {
 ipcRenderer.send('information');
 
 document.querySelector('.regist').onclick = function () {
-  var user = document.querySelector('.user').value,
+  var user = document.querySelector('.user').value.replace(/[:, ]/g, '').trim(),
+    company = document.querySelector('.company').value.replace(/[:, ]/g, '').trim(),
     identity = document.querySelector('.identity').value;
+  if (!company) {
+    alert('公司名不能为空.');
+    return;
+  }
   if (!user) {
     alert('用户名不能为空.');
     return;
@@ -52,5 +62,5 @@ document.querySelector('.regist').onclick = function () {
       alert('注册码不正确或已过期，请重新申请.');
     }
   });
-  ipcRenderer.send('regist', 'user=' + user.replace(/[:, ]/g, '') + '&identity=' + identity);
+  ipcRenderer.send('regist', 'user=' + user + '&company=' + company + '&identity=' + identity);
 }

@@ -10,7 +10,7 @@
 
 .list-info {
   height: 36px;
-  padding: 5px;
+  padding: 5px 20px;
   margin: 0 auto;
   text-align: left;
   font-weight: bold;
@@ -22,4 +22,6 @@
 .list-info .flex-item {
   flex-grow: 1;
   text-align: center;
+  flex-shrink: 0;
+  flex-basis: 100px;
 }

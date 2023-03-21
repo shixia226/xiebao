@@ -79,12 +79,12 @@ textarea {
 }
 
 input {
-  background: #fff!important;
-  border: 1px solid #e4e4e4!important;
+  background: #fff !important;
+  border: 1px solid #e4e4e4 !important;
 }
 input:focus {
-  border: 1px solid rgb(106, 154, 230)!important;
-  background: rgb(237, 242, 253)!important;
+  border: 1px solid rgb(106, 154, 230) !important;
+  background: rgb(237, 242, 253) !important;
 }
 
 .header > p {
@@ -103,7 +103,11 @@ input:focus {
 }
 
 .ui-button {
-  background: linear-gradient(360deg, rgb(246, 246, 246) -0.09%, rgb(255, 255, 255) 100%);
+  background: linear-gradient(
+    360deg,
+    rgb(246, 246, 246) -0.09%,
+    rgb(255, 255, 255) 100%
+  );
   padding: 5px 20px;
   border-radius: 3px;
 }
@@ -116,9 +120,29 @@ input:focus {
   padding: 7px 14px;
 }
 
+body > .print-container {
+  visibility: hidden;
+}
 @media print {
+  body {
+    height: auto;
+    padding: 0;
+  }
+  body > * {
+    display: none;
+  }
+  body > .print-container {
+    display: block;
+    visibility: visible;
+    background: #fff;
+  }
   .page-break {
-    visibility: hidden;
     page-break-after: always;
+    display: block;
+    background-repeat: repeat;
+    -webkit-print-color-adjust: exact!important;
+    -moz-print-color-adjust: exact!important;
+    -ms-print-color-adjust: exact!important;
+    print-color-adjust: exact!important;
   }
 }

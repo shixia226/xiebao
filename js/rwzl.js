@@ -157,6 +157,11 @@ EUI.ajax({
               })
             }
           }
+        },
+        ondatachange: function (value, ovalue, name) {
+          if (name === 'count') {
+            EUI.query("rwzl").innerText = EUI.toNumber(parseFloat(EUI.query('rwzl').innerText) + (+value) - (+ovalue || 0))
+          }
         }
       }
     }, function (list) {
@@ -165,7 +170,12 @@ EUI.ajax({
         url: "/rw?cmd=list-rwzl&date=" + currentDate,
         json: true,
         context: list,
-        onfinish: list.add
+        onfinish (datas) {
+          list.add(datas)
+          EUI.query("rwzl").innerText = EUI.toNumber(datas.reduce(function (sum, data) {
+            return sum + (+data.count || 0)
+          }, 0))
+        }
       });
       /**
        * 保存
@@ -359,32 +369,33 @@ EUI.getCmp("list", {
     width: 80,
     caption: "序号"
   }, {
+    width: 120,
+    name: "factory",
+    caption: "车间"
+  }, {
     name: "name",
     caption: "员工",
     render: function (cell, value, name, c, r, list) {
-      cell.innerHTML = '<a href="./rwxq.html?staff=' + list.getData(r, "staff") + '&date=' + currentDate + '">' + value + '</a>';
+      cell.innerHTML = '<a href="./rwxq.html?staff=' + list.getData(r, "staff") + '&date=' + currentDate + '&factory=' + (list.getData(r, 'factory') || '') + '">' + value + '</a>';
     }
   }, {
     width: 120,
     name: "salary",
     caption: "收益",
     render: function (cell, value) {
-      cell.innerHTML = "￥" + EUI.round(value, 2);
+      cell.innerHTML = EUI.toNumber(value, 2);
     }
-  }],
-  events: {
-    ondataadd: function (ridx) {
-      var salary = this.getData(ridx, "salary") || 0,
-        elem = EUI.query("total-salary");
-      elem.innerHTML = EUI.round((parseFloat(elem.innerHTML, 10) || 0) + salary, 2);
-    }
-  }
+  }]
 }, function (list) {
   EUI.ajax({
     url: "/salary?cmd=list-salary&date=" + currentDate,
     json: true,
     context: list,
-    onfinish: list.add
+    onfinish: function (salaries) {
+      list.add(salaries)
+      var salary = salaries.reduce(function (sum, salary) { return sum + salary.salary; }, 0)
+      EUI.query("total-salary").innerHTML = EUI.toNumber(salary)
+    }
   });
 
   /**

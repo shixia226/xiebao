@@ -24,8 +24,9 @@ module.exports = function (app) {
       case 'update-xh': //更新型号
         var xh = param.match(regXh)[1];
         var yf = +param.match(/yf=([^&]+)/)[1] || 0
+        var income = +param.match(/income=([^&]+)/)[1] || 0
         var gxs = JSON.parse(decodeURIComponent(param.match(/gxs=([^&]+)/)[1]));
-        var salary = { yf, gxs }
+        var salary = { yf, income, gxs }
         var out = fs.createWriteStream(Config.DIR_XH + xh, { encoding: "utf8" });
         out.write(JSON.stringify(salary));
         out.end();

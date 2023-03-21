@@ -112,27 +112,36 @@ EUI.getCmp("list", {
     name: "xh",
     caption: "型号"
   }, {
-    width: 160,
+    width: 120,
     name: "count",
     caption: "数量"
   }, {
-    width: 160,
+    width: 80,
     name: "income",
-    caption: "货价"
+    caption: "货价",
+    render: function (cell, value) {
+      cell.innerHTML = EUI.toNumber(value, 2);
+    }
   }, {
     width: 160,
     name: "price",
-    caption: "工价"
+    caption: "工价",
+    render: function (cell, value) {
+      cell.innerHTML = EUI.toNumber(value, 2);
+    }
   }, {
     width: 120,
     name: "yf",
-    caption: "运费"
+    caption: "运费",
+    render: function (cell, value) {
+      cell.innerHTML = EUI.toNumber(value, 2);
+    }
   }, {
     width: 160,
     name: "total",
     caption: "利润",
     render: function (cell, value, name, i, ridx, list) {
-      cell.innerText = value;
+      cell.innerText = EUI.toNumber(value);
       cell.style.color = value > 0 ? '#51688E' : '#F95A3E';
     }
   }]
@@ -159,13 +168,13 @@ EUI.getCmp("list", {
               data.push({ xh, count, income: '', price: '', yf: '', total: '' })
               continue
             }
-            var price = toNumber((jg.price || 0) * count)
-            var income = toNumber((jg.income || 0) * count)
-            var yf = toNumber((jg.yf || 0) * count)
+            var price = EUI.toNumber((jg.price || 0) * count)
+            var income = EUI.toNumber((jg.income || 0) * count)
+            var yf = EUI.toNumber((jg.yf || 0) * count)
             totalPrice += price
             totalIncome += income
             totalYf += yf
-            data.push({ xh, count, income, price, yf, total: income - price - yf })
+            data.push({ xh, count, income, price, yf, total: EUI.toNumber(income - price - yf) })
           }
           list.add(data)
 
@@ -173,17 +182,24 @@ EUI.getCmp("list", {
             url: "/salary?cmd=query-shouzhi&date=" + currentDate,
             json: true,
             onfinish: function (shouzhi) {
-              var other = shouzhi.other || 0
-              EUI.query('income').innerText = toNumber(totalIncome)
-              EUI.query('salary').innerText = toNumber(totalPrice)
-              EUI.query('yf').innerText = toNumber(totalYf)
-              EUI.query('total').innerText = toNumber(totalIncome - totalPrice - totalYf - other)
+              var xiankuan = shouzhi.xiankuan || 0
+              var koukuan = shouzhi.koukuan || 0
+              EUI.query('income').innerText = EUI.toNumber(totalIncome)
+              EUI.query('salary').innerText = EUI.toNumber(totalPrice)
+              EUI.query('yf').innerText = EUI.toNumber(totalYf)
+              EUI.query('total').innerText = EUI.toNumber(totalIncome - totalPrice - totalYf - xiankuan - koukuan)
 
-              EUI.query('other').value = other
-              EUI.bind(EUI.query('other'), 'input', function () {
-                var other = +this.value || 0
-                EUI.query('total').innerText = toNumber(totalIncome - totalPrice - totalYf - other)
-              })
+              var xk = EUI.query('xiankuan')
+              var kk = EUI.query('koukuan')
+              xk.value = xiankuan
+              kk.value = koukuan
+              function onInputChange () {
+                var xiankuan = +xk.value || 0
+                var koukuan = +kk.value || 0
+                EUI.query('total').innerText = EUI.toNumber(totalIncome - totalPrice - totalYf - xiankuan - koukuan)
+              }
+              EUI.bind(xk, 'input', onInputChange)
+              EUI.bind(kk, 'input', onInputChange)
             }
           })
         }
@@ -200,11 +216,12 @@ EUI.getCmp("list", {
     args: [list],
     onclick: function (btn, list) {
       var data = {
-        income: toNumber(+EUI.query('income').innerText),
-        salary: toNumber(+EUI.query('salary').innerText),
-        yf: toNumber(+EUI.query('yf').innerText),
-        other: toNumber(+EUI.query('other').value || 0),
-        total: toNumber(+EUI.query('total').innerText)
+        income: EUI.toNumber(+EUI.query('income').innerText),
+        salary: EUI.toNumber(+EUI.query('salary').innerText),
+        yf: EUI.toNumber(+EUI.query('yf').innerText),
+        xiankuan: EUI.toNumber(+EUI.query('xiankuan').value || 0),
+        koukuan: EUI.toNumber(+EUI.query('koukuan').value || 0),
+        total: EUI.toNumber(+EUI.query('total').innerText)
       }
       EUI.ajax({
         url: "/salary?cmd=save-shouzhi&date=" + currentDate + "&shouzhi=" + JSON.stringify(data),
@@ -222,7 +239,3 @@ EUI.getCmp("list", {
   });
 
 });
-
-function toNumber (num) {
-  return Math.round(num * 1000) / 1000
-}

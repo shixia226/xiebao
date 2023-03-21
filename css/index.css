@@ -42,3 +42,26 @@
 input[type="file"] {
   display: none;
 }
+
+.ui-dialog-content {
+  padding: 20px;
+}
+
+.ui-dialog-content .item {
+  padding: 10px 10px 10px 80px;
+}
+
+.ui-dialog-content .item .title {
+  width: 110px;
+  margin-left: -120px;
+  display: inline-block;
+  text-align: right;
+  vertical-align: top;
+  padding: 2px;
+}
+
+.ui-dialog-content .item input {
+  width: 100%;
+  border: 1px solid #ccc;
+  padding: 2px 5px;
+}
