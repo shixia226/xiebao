@@ -7,40 +7,38 @@ module.exports = {
   init (callback) {
     var permission = true;
     try {
-      if (!fs.existsSync(Config.PATH)) {
-        for (var name in Config) {
-          var cpath = Config[name];
-          if (/\/$/.test(cpath)) {
-            mkdirs(cpath);
-          }
+      for (var name in Config) {
+        var cpath = Config[name];
+        if (/\/$/.test(cpath)) {
+          mkdirs(cpath);
         }
-      } else {
-        let file = Config.PATH + '__test__';
-        fs.writeFileSync(file, '');
-        fs.unlinkSync(file);
+      }
 
-        if (fs.existsSync(Config.FILE_CONFIG)) {
-          var match = fs.readFileSync(Config.FILE_CONFIG).toString().match(/^([^:]+):(.+)$/),
-            identity = match[2],
-            code = decode(identity);
-          if (code) {
-            this.getDiskSerial((serial) => {
-              if (code.serial === serial) {
-                const name = decodeURI(match[1]).split('-')
-                settings = {
-                  user: name[0],
-                  company: name[1],
-                  serial,
-                  identity,
-                  date: code.date
-                };
-                callback(settings.date > (new Date()).getTime(), permission);
-              } else {
-                callback(false, permission);
-              }
-            });
-            return;
-          }
+      let file = Config.PATH + '__test__';
+      fs.writeFileSync(file, '');
+      fs.unlinkSync(file);
+      
+      if (fs.existsSync(Config.FILE_CONFIG)) {
+        var match = fs.readFileSync(Config.FILE_CONFIG).toString().match(/^([^:]+):(.+)$/),
+          identity = match[2],
+          code = decode(identity);
+        if (code) {
+          this.getDiskSerial((serial) => {
+            if (code.serial === serial) {
+              const name = decodeURI(match[1]).split('-')
+              settings = {
+                user: name[0],
+                company: name[1],
+                serial,
+                identity,
+                date: code.date
+              };
+              callback(settings.date > (new Date()).getTime(), permission);
+            } else {
+              callback(false, permission);
+            }
+          });
+          return;
         }
       }
     } catch (e) {

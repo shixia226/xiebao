@@ -35,7 +35,11 @@ module.exports = {
   },
   refresh (xh, gxs) {
     if (salary) {
-      salary[xh] = gxs;
+      if (gxs) {
+        salary[xh] = gxs;
+      } else {
+        delete salary[xh]
+      }
     }
   },
   list (xhs) {
