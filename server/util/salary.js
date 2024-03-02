@@ -1,10 +1,10 @@
 const fs = require('fs');
 const Config = require('./config');
-let salary;
+const Dir = require('./dir');
 
 module.exports = {
-  getGxPrice (xh, gx) {
-    initSalary();
+  getGxPrice (xh, gx, date) {
+    var salary = initSalary(date);
     var gxs = salary[xh];
     if (!gxs) {
       return 0;
@@ -17,8 +17,8 @@ module.exports = {
     }
     return 0;
   },
-  listXhPrice () {
-    initSalary();
+  listXhPrice (date) {
+    var salary = initSalary(date);
     let result = {}
     for (var xh in salary) {
       var xhgx = salary[xh]
@@ -33,17 +33,8 @@ module.exports = {
     }
     return result;
   },
-  refresh (xh, gxs) {
-    if (salary) {
-      if (gxs) {
-        salary[xh] = gxs;
-      } else {
-        delete salary[xh]
-      }
-    }
-  },
-  list (xhs) {
-    initSalary();
+  list (xhs, date) {
+    var salary = initSalary(date);
     var arr = [];
     for (var xh in salary) {
       if (!xhs || xhs.indexOf(xh) !== -1) {
@@ -57,16 +48,16 @@ module.exports = {
   }
 }
 
-function initSalary () {
-  if (!salary) {
-    salary = {};
-    var files = fs.readdirSync(Config.DIR_XH);
-    for (var i = 0, len = files.length; i < len; i++) {
-      var data = fs.readFileSync(Config.DIR_XH + files[i]);
-      var xh = JSON.parse(data);
-      salary[files[i]] = xh.gxs ? xh : { yf: 0, gxs: xh }
-    }
+function initSalary (date) {
+  var salary = {};
+  var dir = Dir.getXinghaoDir(date)
+  var files = fs.readdirSync(dir);
+  for (var i = 0, len = files.length; i < len; i++) {
+    var data = fs.readFileSync(dir + files[i]);
+    var xh = JSON.parse(data);
+    salary[files[i]] = xh.gxs ? xh : { yf: 0, gxs: xh }
   }
+  return salary
 }
 
 function toNumber (num) {

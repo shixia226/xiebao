@@ -6,7 +6,7 @@ let staffList
 module.exports = {
   listStaff () {
     if (!staffList) {
-      staffList = JSON.parse(fs.readFileSync(Config.FILE_STAFF))
+      staffList = fs.existsSync(Config.FILE_STAFF) ? JSON.parse(fs.readFileSync(Config.FILE_STAFF)) : []
     }
     return staffList
   },

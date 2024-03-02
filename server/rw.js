@@ -7,22 +7,25 @@ const Config = require('./util/config');
 const Salary = require('./util/salary');
 const Staff = require('./util/staff')
 const ready = require('./util/ready');
+const Dir = require('./util/dir');
 
 module.exports = function (app) {
   app.on('/rw', function (evt, param) {
     switch (param.match(/cmd=([^&]+)/)[1]) {
-      case 'list-rwzl': //罗列该月任务总量
+      case 'list-rwzl': { //罗列该月任务总量
         fs.readFile(getParamDate(param), function (err, data) {
-          Msg(evt, data || '{}', param);
+          Msg(evt, data || '[]', param);
         })
         break;
-      case 'update-rwzl': //更新型号
+      }
+      case 'update-rwzl': { //更新型号
         var out = fs.createWriteStream(getParamDate(param), { encoding: "utf8" });
         out.write(param.match(/rwzls=([^&]+)/)[1]);
         out.end();
         Msg(evt, 'OK', param);
         break;
-      case 'check-rw': //核验任务
+      }
+      case 'check-rw': { //核验任务
         var date = param.match(regDate)[1];
         fs.readFile(Config.DIR_RWZL + date, function (err, data) {
           if (err) {
@@ -35,6 +38,7 @@ module.exports = function (app) {
             if (!err) {
               for (var i = 0, len = files.length; i < len; i++) {
                 var datas = JSON.parse(fs.readFileSync(dir + files[i]));
+                datas = datas.datas || datas
                 for (var k = 0, klen = datas.length; k < klen; k++) {
                   var xq = datas[k];
                   var rwxh = rwxq[xq.xh] = rwxq[xq.xh] || {};
@@ -49,14 +53,15 @@ module.exports = function (app) {
               var xq = data[i];
               rwzl[xq.xh] = (rwzl[xq.xh] || 0) + (parseInt(xq.count, 10) || 0);
             }
+            var xinghaoDir = Dir.getXinghaoDir(date)
             for (var xh in rwzl) {
               var ocount = rwzl[xh],
                 rwxh = rwxq[xh] || {};
-              if (!fs.existsSync(Config.DIR_XH + xh)) {
+              if (!fs.existsSync(xinghaoDir + xh)) {
                 arr.push({ xh, gx: '-', count: -1, ocount })
                 continue
               }
-              var gxs = JSON.parse(fs.readFileSync(Config.DIR_XH + xh));
+              var gxs = JSON.parse(fs.readFileSync(xinghaoDir + xh));
               gxs = gxs.gxs || gxs
               for (var k = 0, klen = gxs.length; k < klen; k++) {
                 var gx = gxs[k].gx,
@@ -75,7 +80,8 @@ module.exports = function (app) {
           });
         })
         break;
-      case 'list-rw': //罗列指定月份、型号、工序的详情
+      }
+      case 'list-rw': {//罗列指定月份、型号、工序的详情
         var dir = Config.DIR_RWXQ + param.match(regDate)[1] + '/';
         fs.readdir(dir, function (err, files) {
           var arr = [];
@@ -84,6 +90,7 @@ module.exports = function (app) {
               gx = param.match(/gx=([^&]+)/)[1];
             for (var i = 0, len = files.length; i < len; i++) {
               var datas = JSON.parse(fs.readFileSync(dir + files[i]));
+              datas = datas.datas || datas
               for (var k = 0, klen = datas.length; k < klen; k++) {
                 var xq = datas[k];
                 if (xq.xh === xh && xq.gx === gx) {
@@ -99,18 +106,25 @@ module.exports = function (app) {
           Msg(evt, JSON.stringify(arr), param);
         })
         break;
-      case 'list-rwxq': //罗列任务详情
+      }
+      case 'list-rwxq': {//罗列任务详情
         fs.readFile(getParamXq(param), function (err, data) {
-          Msg(evt, data || '{}', param);
+          const content = JSON.parse(data || '[]')
+          if (Object.prototype.toString.call(content) !== '[object Array]') {
+            data = JSON.stringify(content.datas)
+          }
+          Msg(evt, data || '[]', param);
         })
         break;
-      case 'update-rwxq': //更新任务详情
+      }
+      case 'update-rwxq': {//更新任务详情
         var out = fs.createWriteStream(getParamXq(param), { encoding: "utf8" });
         out.write(decodeURIComponent(param.match(/rwxqs=([^&]+)/)[1]));
         out.end();
         Msg(evt, 'OK', param);
         break;
-      case 'export-rwxq':
+      }
+      case 'export-rwxq': {
         var date = param.match(regDate)[1],
           buffer = export2excel(date, param.match(regStaff)[1].split(',')),
           fileName = Config.PATH + '员工收益详情(' + date + ').xlsx';
@@ -131,7 +145,8 @@ module.exports = function (app) {
           });
         });
         break;
-      case 'remove-rw':
+      }
+      case 'remove-rw': {
         var date = param.match(regDate)[1],
           rwzl = Config.DIR_RWZL + date;
         if (fs.existsSync(rwzl)) {
@@ -140,12 +155,14 @@ module.exports = function (app) {
         deleteFolder(Config.DIR_RWXQ + date);
         Msg(evt, 'OK', param);
         break;
+      }
     }
   })
 
   app.on('/salary', function (evt, param) {
     switch (param.match(/cmd=([^&]+)/)[1]) {
       case 'query-salary': //查询工资
+        var date = param.match(regDate)[1]
         fs.readFile(getParamDate(param), function (err, datas) {
           var xhgxs = {};
           if (!err) {
@@ -155,10 +172,10 @@ module.exports = function (app) {
               var xh = datas[i].xh;
               if (xhs.indexOf(xh) === -1) xhs.push(xh);
             }
-            xhgxs = Salary.list(xhs)
+            xhgxs = Salary.list(xhs, date)
           }
           Msg(evt, JSON.stringify({
-            salary: getSalary(getParamXq(param)),
+            salary: getSalary(getParamXq(param), date),
             xhgxs: xhgxs
           }), param);
         })
@@ -167,7 +184,8 @@ module.exports = function (app) {
         fs.readFile(Config.FILE_STAFF, function (err, datas) {
           var salary = [];
           if (!err) {
-            var dir = Config.DIR_RWXQ + param.match(regDate)[1] + '/';
+            var date = param.match(regDate)[1]
+            var dir = Config.DIR_RWXQ + date + '/';
             datas = JSON.parse(datas);
             for (var i = 0, len = datas.length; i < len; i++) {
               var data = datas[i]
@@ -175,11 +193,12 @@ module.exports = function (app) {
                 continue
               }
               var staff = data.id + '-' + data.name;
+              const { shouru, koukuan } = getSalary(dir + staff, date)
               salary.push({
                 name: data.name,
                 staff,
                 factory: data.factory,
-                salary: getSalary(dir + staff)
+                salary: shouru - koukuan
               })
             }
             salary.sort(function (sa, sb) {
@@ -205,7 +224,8 @@ module.exports = function (app) {
         break;
       case 'list-salaries':
         var company = ready.getCompany()
-        var dir = Config.DIR_RWXQ + param.match(regDate)[1] + '/';
+        var date = param.match(regDate)[1]
+        var dir = Config.DIR_RWXQ + date + '/';
         var staff = param.match(regStaff)[1].split(',')
         var data = []
         for (let i = 0, len = staff.length; i < len; i++) {
@@ -214,16 +234,24 @@ module.exports = function (app) {
             data.push({ company, name: name.split('-')[1], factory: Staff.getFactory(name), salary: 0, details: [] })
             continue
           }
-          var rwxq = JSON.parse(fs.readFileSync(dir + name))
+          const content = JSON.parse(fs.readFileSync(dir + name))
+          let rwxq = []
+          let koukuan = 0
+          if (Object.prototype.toString.call(content) === '[object Array]') {
+            rwxq = content
+          } else {
+            rwxq = content.datas
+            koukuan = content.koukuan
+          }
           let salary = 0
           const details = rwxq.map(function (rwxq) {
             const { xh, gx, count } = rwxq
-            const price = Salary.getGxPrice(xh, gx)
+            const price = Salary.getGxPrice(xh, gx, date)
             const profit = toNumber(price * count)
             salary += profit
             return { xh, gx, count, price, profit }
           })
-          data.push({ company, name: name.split('-')[1], factory: Staff.getFactory(name), salary: toNumber(salary), details })
+          data.push({ company, name: name.split('-')[1], factory: Staff.getFactory(name), salary: toNumber(salary), koukuan, details })
         }
         Msg(evt, JSON.stringify(data), param);
         break
@@ -274,16 +302,23 @@ function getParamXq (param) {
   return dir + param.match(regStaff)[1];
 }
 
-function getSalary (file) {
-  var salary = 0;
+function getSalary (file, date) {
+  var shouru = 0;
+  let koukuan = 0
   if (fs.existsSync(file, fs.F_OK)) {
-    var datas = JSON.parse(fs.readFileSync(file));
+    const content = JSON.parse(fs.readFileSync(file));
+    if (Object.prototype.toString.call(content) === '[object Array]') {
+      datas = content
+    } else {
+      datas = content.datas
+      koukuan = content.koukuan
+    }
     for (var i = 0, len = datas.length; i < len; i++) {
       var data = datas[i];
-      salary += (data.count * Salary.getGxPrice(data.xh, data.gx));
+      shouru += (data.count * Salary.getGxPrice(data.xh, data.gx, date));
     }
   }
-  return salary;
+  return { shouru, koukuan };
 }
 
 function export2excel (date, staffs) {
@@ -300,7 +335,7 @@ function export2excel (date, staffs) {
       for (var k = 0; k < klen; k++) {
         var ridx = parseInt(k / 2),
           rw = rwxq[k],
-          price = Salary.getGxPrice(rw.xh, rw.gx),
+          price = Salary.getGxPrice(rw.xh, rw.gx, date),
           salary = price * rw.count;
         sum += salary;
         (rows[ridx] = rows[ridx] || []).push(k + 1 + '', rw.xh, rw.gx, rw.count, price, salary.toFixed(2), '');

@@ -116,14 +116,14 @@ EUI.getCmp("list", {
     name: "count",
     caption: "数量"
   }, {
-    width: 80,
+    width: 120,
     name: "income",
     caption: "货价",
     render: function (cell, value) {
       cell.innerHTML = EUI.toNumber(value, 2);
     }
   }, {
-    width: 160,
+    width: 120,
     name: "price",
     caption: "工价",
     render: function (cell, value) {
@@ -132,7 +132,7 @@ EUI.getCmp("list", {
   }, {
     width: 120,
     name: "yf",
-    caption: "运费",
+    caption: "损耗",
     render: function (cell, value) {
       cell.innerHTML = EUI.toNumber(value, 2);
     }
@@ -151,7 +151,7 @@ EUI.getCmp("list", {
     json: true,
     onfinish: function (rwzl) {
       EUI.ajax({
-        url: "/xinghao?cmd=list-xhjg",
+        url: "/xinghao?cmd=list-xhjg&date=" + currentDate,
         json: true,
         onfinish (xhjg) {
           var data = []
@@ -237,5 +237,51 @@ EUI.getCmp("list", {
   }, function (btn) {
     btn.getContainer().style.cssText += '; position: absolute; margin: 10px 0 0 10px; right: 50px;';
   });
+
+  EUI.getCmp('button', {
+    pelem: 'con-list',
+    caption: '打印',
+    args: [list],
+    onclick: function (btn, list) {
+      const datas = list.getData(['xh', 'count', 'income', 'price', 'yf', 'total'], true)
+      EUI.printShouzhi([
+        { text: '总货款', value: EUI.toNumber(+EUI.query('income').innerText) },
+        { text: '工资', value: EUI.toNumber(+EUI.query('salary').innerText) },
+        { text: '损耗', value: EUI.toNumber(+EUI.query('yf').innerText) },
+        { text: '线款', value: EUI.toNumber(+EUI.query('xiankuan').innerText) },
+        { text: '扣款', value: EUI.toNumber(+EUI.query('koukuan').innerText) },
+        { text: '总利润', value: EUI.toNumber(+EUI.query('total').innerText) },
+      ], datas, [{
+        width: '60px',
+        text: '序号',
+      }, {
+        width: '',
+        text: '型号',
+        name: 'xh'
+      }, {
+        width: '120px',
+        text: '数量',
+        name: 'count'
+      }, {
+        width: '120px',
+        text: '货价',
+        name: 'income'
+      }, {
+        width: '120px',
+        text: '工价',
+        name: 'price'
+      }, {
+        width: '120px',
+        text: '损耗',
+        name: 'yf'
+      }, {
+        width: '160',
+        text: '利润',
+        name: 'total'
+      }], currentDate)
+    }
+  }, function (btn) {
+    btn.getContainer().style.cssText += '; position: absolute; margin: 10px 0 0 10px; right: 140px;';
+  })
 
 });

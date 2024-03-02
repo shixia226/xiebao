@@ -1,83 +1,91 @@
 if (window.EUI) {
-  window.EUI.print = function (datas, date) {
+  window.EUI.print = (datas, columns, date) => {
     date = date.substr(0, 4) + '年' + date.substr(4) + '月'
     var container = document.body.appendChild(document.createElement('div'))
     container.className = 'print-container'
     for (let i = 0, len = datas.length; i < len; i++) {
-      const { name, company, factory, salary, details } = datas[i]
+      const { headers, details, watermark } = datas[i]
       const page = container.appendChild(document.createElement('div'))
       const header = page.appendChild(document.createElement('div'))
       header.style.cssText = '; height: 30px; padding: 5px; font-weight: bold; display: flex; justify-content: space-between;'
-      header.innerHTML = `<div>车间：<span style="font-weight: normal; padding-left: 5px;">${factory || '-'}</span></div>
-          <div>员工：<span style="font-weight: normal; padding-left: 5px;">${name}</span></div>
-          <div>月份：<span style="font-weight: normal; padding-left: 5px;">${date}</span></div>
-          <div>总工资：<span style="font-weight: normal; padding-left: 5px;">${salary} 元</span></div>`
+      header.innerHTML = headers.map(({ text, value, unit }) => `<div>${text}：<span style="font-weight: normal; padding-left: 5px;">${value || '-'}${unit ? ` ${unit}` : ''}</span></div>`).join('')
       const table = page.appendChild(document.createElement('table'))
       table.style.cssText = '; border-collapse: collapse; width: 100%;'
       const thead = table.appendChild(document.createElement('thead'))
-      initHeader(thead)
-      initDetails(details, table)
+      initHeader(thead, columns)
+      initDetails(details, table, columns)
       page.className = 'page-break'
-      const watermark = generateWatermark([company, factory, name])
       page.style.cssText = `background-size: ${watermark.width}px ${watermark.height}; background-image: url(${watermark.watermark})`
     }
-    setTimeout(()=>{
+    setTimeout(() => {
       window.print()
       document.body.removeChild(container)
     })
   }
-}
 
-function initDetails (details, table) {
-  for (let i = 0, len = details.length; i < len; i++) {
-    const row = table.insertRow(-1)
-    initRow(details[i], row, i + 1)
+  window.EUI.printSalary = function (datas, date) {
+    window.EUI.print(datas.map(({ name, company, factory, salary, koukuan, details }) => {
+      return {
+        headers: [{ text: '车间', value: factory }, { text: '员工', value: name }, { text: '月份', value: date }, { text:'扣款', value: koukuan }, { text: '总工资', value: EUI.toNumber(salary - koukuan), unit: '元' }],
+        details,
+        watermark: generateWatermark([company, factory, name])
+      }
+    }), [{
+      width: '60px',
+      text: '序号',
+    }, {
+      width: '160px',
+      text: '型号',
+      name: 'xh'
+    }, {
+      width: '160px',
+      text: '工序',
+      name: 'gx'
+    }, {
+      width: '160px',
+      text: '数量',
+      name: 'count'
+    }, {
+      width: '100px',
+      text: '单价',
+      name: 'price'
+    }, {
+      width: '',
+      text: '收益',
+      name: 'profit'
+    }], date)
+  }
+
+  window.EUI.printShouzhi = function (headers, datas, columns, date) {
+    window.EUI.print([{ headers, details: datas, watermark: generateWatermark([date.substr(0, 4) + '年' + date.substr(4) + '月']) }], columns, date)
   }
 }
 
-function initRow (data, row, index) {
-  for (let i = 0, len = Columns.length; i < len; i++) {
-    const { name } = Columns[i]
+function initDetails (details, table, columns) {
+  for (let i = 0, len = details.length; i < len; i++) {
+    const row = table.insertRow(-1)
+    initRow(details[i], row, i + 1, columns)
+  }
+}
+
+function initRow (data, row, index, columns) {
+  for (let i = 0, len = columns.length; i < len; i++) {
+    const { name } = columns[i]
     const cell = row.insertCell(-1)
     cell.style.cssText = '; height: 30px; border-bottom: 1px solid #999; '
     cell.appendChild(document.createTextNode(!name ? index : data[name]))
   }
 }
 
-function initHeader (thead) {
-  for (let i = 0, len = Columns.length; i < len; i++) {
-    const { width, text } = Columns[i]
+function initHeader (thead, columns) {
+  for (let i = 0, len = columns.length; i < len; i++) {
+    const { width, text } = columns[i]
     const th = thead.appendChild(document.createElement('th'))
     th.style.cssText = '; height: 30px; text-align: left; border-bottom: 1px solid #999; '
     th.style.width = width
     th.appendChild(document.createTextNode(text))
   }
 }
-
-const Columns = [{
-  width: '60px',
-  text: '序号',
-}, {
-  width: '160px',
-  text: '型号',
-  name: 'xh'
-}, {
-  width: '160px',
-  text: '工序',
-  name: 'gx'
-}, {
-  width: '160px',
-  text: '数量',
-  name: 'count'
-}, {
-  width: '100px',
-  text: '单价',
-  name: 'price'
-}, {
-  width: '',
-  text: '收益',
-  name: 'profit'
-}]
 
 let canvasObj = null
 const measureTextWidthByCanvas = function (text, font) {

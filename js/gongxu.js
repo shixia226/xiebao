@@ -52,7 +52,7 @@ EUI.getCmp("list", {
     },
     ondatachange: function (value, ovalue, name) {
       if (name === 'price') {
-        EUI.query("price").innerText = EUI.toNumber(parseFloat(EUI.query('price').innerText) + (+value) - (+ovalue || 0)) + ' 元'
+        EUI.query("price").innerText = EUI.toNumber((parseFloat(EUI.query('price').innerText)||0) + (+value||0) - (+ovalue || 0)) + ' 元'
       }
     }
   }
@@ -187,7 +187,39 @@ EUI.getCmp("list", {
         }
       }
     }, function (btn) {
-      btn.getContainer().style.cssText += '; position: absolute; margin-top: 10px; right: 50px;';
+      btn.getContainer().style.cssText += '; position: absolute; margin-top: 10px; right: 120px;';
     });
+    EUI.getCmp("button", {
+      pelem: "con-gongxu",
+      caption: "备份所有",
+      args: [gongxuList, list],
+      onclick: function () {
+        EUI.confirm("备份所有将清空所有可用工序，但不影响之前月份的工资数据？", function () {
+          EUI.ajax({
+            url: "/xinghao?cmd=backup&date=" + getBackupDate(),
+            onfinish: function(data){
+              if (data === 'OK') {
+                EUI.alert('备份成功', function(){
+                  window.location.reload()
+                });
+              } else {
+                EUI.alert('该月份已经备份过，不能重复备份')
+              }
+            }
+          })
+        })
+      }
+    }, function (btn) {
+      btn.getContainer().style.cssText += '; position: absolute; margin-top: 10px; right: 12px;';
+    })
   });
 });
+
+var pad = (num, len) => {
+  var str = new Array(len = len || 2).join('0') + num;
+  return str.substr(str.length - len);
+};
+var getBackupDate = () => {
+  var date = new Date();
+  return date.getFullYear() + pad(date.getMonth(), 2);
+}

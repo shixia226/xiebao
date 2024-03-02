@@ -19,7 +19,7 @@ module.exports = function (app) {
         })
         break;
       case 'list-xhjg': // 型号价格
-        Msg(evt, JSON.stringify(Salary.listXhPrice()), param)
+        Msg(evt, JSON.stringify(Salary.listXhPrice(param.match(regDate)[1])), param)
         break
       case 'update-xh': //更新型号
         var xh = param.match(regXh)[1];
@@ -30,13 +30,11 @@ module.exports = function (app) {
         var out = fs.createWriteStream(Config.DIR_XH + xh, { encoding: "utf8" });
         out.write(JSON.stringify(salary));
         out.end();
-        Salary.refresh(xh, salary);
         Msg(evt, 'OK', param);
         break;
       case 'remove-xh': //删除型号
         var xh = param.match(regXh)[1];
         fs.unlink(Config.DIR_XH + xh, function () {
-          Salary.refresh(xh, null);
           Msg(evt, 'OK', param);
         })
         break;
@@ -45,8 +43,21 @@ module.exports = function (app) {
           Msg(evt, data || '{}', param);
         })
         break;
+      case 'backup': //备份
+        var dir = Config.DIR_BACKUP + param.match(regDate)[1] + '/'
+        if (fs.existsSync(dir)) {
+          Msg(evt, 'Fail', param)
+        } else {
+          fs.mkdirSync(dir);
+          fs.readdirSync(Config.DIR_XH).forEach(function(file) {
+            fs.renameSync(Config.DIR_XH + file, dir+file)
+          })
+          Msg(evt, 'OK', param)
+        }
+        break
     }
   })
 }
 
+const regDate = /date=([^&]+)/
 const regXh = /xh=([^&]+)/;

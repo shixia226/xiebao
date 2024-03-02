@@ -21,7 +21,8 @@ EUI.ajax({
   onfinish: function (data) {
     EUI.query("factory").innerHTML = EUI.parseUrl('factory') || '-';
     EUI.query("name-staff").innerHTML = staff.split('-')[1];
-    EUI.query("salary").innerHTML = EUI.toNumber(data["salary"]) + " 元";
+    EUI.query("salary").innerHTML = EUI.toNumber(data["salary"].shouru - data["salary"].koukuan) + " 元";
+    EUI.query("koukuan").value = data["salary"].koukuan;
     xhgxs = data["xhgxs"];
     var xhs = {},
       gxs = {},
@@ -178,8 +179,9 @@ EUI.ajax({
                 return;
               }
             }
+            const koukuan = EUI.toNumber(+EUI.query('koukuan').value)
             EUI.ajax({
-              url: "/rw?cmd=update-rwxq&staff=" + staff + "&date=" + currentDate + "&rwxqs=" + encodeURIComponent(JSON.stringify(datas)),
+              url: "/rw?cmd=update-rwxq&staff=" + staff + "&date=" + currentDate + "&rwxqs=" + encodeURIComponent(JSON.stringify({datas,koukuan})),
               onfinish: function (salary) {
                 EUI.confirm("是否跳转到收益总览页面？", function () {
                   window.location.href = "rwzl.html";
@@ -203,7 +205,7 @@ EUI.ajax({
                 url: '/salary?cmd=list-salaries&date=' + currentDate + '&staff=' + staff,
                 json: true,
                 onfinish: function (data) {
-                  EUI.print(data, currentDate)
+                  EUI.printSalary(data, currentDate)
                 }
               })
             })

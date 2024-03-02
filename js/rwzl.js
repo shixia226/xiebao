@@ -148,12 +148,13 @@ EUI.ajax({
           var target = evt.target;
           if (target.nodeName.toUpperCase() === "SPAN") {
             var title = target.title;
+            const list = evt.data
             if (title === "添加任务") {
-              evt.data.add();
+              list.add();
             } else if (title === "删除") {
               var ridx = target.parentNode.parentNode.rowIndex;
               EUI.confirm("确认删除序号【" + (ridx + 1) + "】的任务？", function () {
-                evt.data.remove(ridx);
+                list.remove(ridx);
               })
             }
           }
@@ -232,7 +233,7 @@ EUI.ajax({
               } else {
                 EUI.getCmp("dialog.checkresult", {
                   caption: "核算结果",
-                  width: 480,
+                  width: 600,
                   height: 360,
                   miniBtns: ["close"],
                   btns: [{
@@ -248,7 +249,7 @@ EUI.ajax({
                         width: 40,
                         caption: "序号"
                       }, {
-                        width: 80,
+                        width: 120,
                         name: "xh",
                         caption: "型号"
                       }, {
@@ -264,6 +265,17 @@ EUI.ajax({
                         name: "ocount",
                         caption: "任务总量"
                       }, {
+                        width: 80,
+                        caption: "偏差",
+                        render: function(cell, value, name, i, ridx, list) {
+                          var count = list.getData(ridx, "count"),
+                            ocount = list.getData(ridx, "ocount");
+                          const num = count !== -1 ? count - ocount : 0
+                          if (num !== 0) {
+                            cell.innerHTML = `<span style="color: ${(num < 0 ? '#51688E' : '#F95A3E')};">${Math.abs(num)}</span>`;
+                          }
+                        }
+                      }, {
                         caption: "",
                         render: function (cell, value, name, i, ridx, list) {
                           var count = list.getData(ridx, "count"),
@@ -274,7 +286,7 @@ EUI.ajax({
                       }],
                       events: {
                         clickcell: function (evt, cidx, ridx) {
-                          if (cidx !== 5 || evt.target.tagName.toLowerCase() !== "span") return;
+                          if (cidx !== 6 || evt.target.tagName.toLowerCase() !== "span") return;
                           var count = this.getData(ridx, "count");
                           if (count === -1) {
                             EUI.alert('该型号可能已被删除，无法核验')
@@ -450,7 +462,7 @@ EUI.getCmp("list", {
         url: '/salary?cmd=list-salaries&date=' + currentDate + '&staff=' + staffs.join(','),
         json: true,
         onfinish: function (data) {
-          EUI.print(data, currentDate)
+          EUI.printSalary(data, currentDate)
         }
       })
     }
